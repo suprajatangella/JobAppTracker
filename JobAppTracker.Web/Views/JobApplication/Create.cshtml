@@ -1,0 +1,98 @@
+﻿@model JobApplication
+@{
+    // Get the user's ID from the claims
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+}
+
+<div class="w-100 card border-0 p-4">
+    <div class="card-header bg-success bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="text-white py-2">Create Job Application</h2>
+            </div>
+        </div>
+    </div>
+    <div class="card-body border p-4">
+        <form method="post" class="row" enctype="multipart/form-data">
+             @* <input hidden asp-for="CreatedBy" value="@userId" /> *@
+            @* <input hidden asp-for="UpdatedBy" value="" /> *@
+            <div class="p-3">
+                @* <div asp-validation-summary="All"></div>  *@
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="CompanyName" class="form-control border shadow" />
+                    <label asp-for="CompanyName" class="ms-2"></label>
+                    <span asp-validation-for="CompanyName" class="text-danger"></span>
+                </div>
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="JobTitle" class="form-control border shadow" />
+                    <label asp-for="JobTitle" class="ms-2"></label>
+                    <span asp-validation-for="JobTitle" class="text-danger"></span>
+                </div>
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="JobLocation" class="form-control border shadow" />
+                    <label asp-for="JobLocation" class="ms-2"></label>
+                    <span asp-validation-for="JobLocation" class="text-danger"></span>
+                </div>
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="AppliedDate" type="datetime-local" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" class="form-control border shadow" />
+                    <label asp-for="AppliedDate" class="ms-2"></label>
+                    <span asp-validation-for="AppliedDate" class="text-danger"></span>
+                </div>
+                <label for="Status">Application Status</label>
+                <select asp-for="Status" asp-items="ViewBag.ApplicationStatuses" class="form-control">
+                    <option value="">-- Select Application Status --</option>
+                </select>
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="Notes" class="form-control border shadow" />
+                    <label asp-for="Notes" class="ms-2"></label>
+                    <span asp-validation-for="Notes" class="text-danger"></span>
+                </div>
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="Resume" type="file" name="resume" class="form-control border shadow" accept=".pdf" onchange="validateFile(this)" />
+                    <label asp-for="Resume" class="ms-2"></label>
+                    <span asp-validation-for="Resume" id="fileError" class="text-danger"></span>
+                </div>
+                <div class="row pt-2">
+                    <div class="col-6 col-md-3">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-check-circle"></i> Create
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="JobApplication" asp-action="Index" class="btn btn-secondary w-100">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        function validateFile(input) {
+            const file = input.files[0];
+            const errorSpan = document.getElementById("fileError");
+            errorSpan.innerText = ""; // Clear previous messages
+
+            if (file) {
+                const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+
+                if (fileExtension !== "pdf") {
+                    errorSpan.innerText = "Only PDF files are allowed.";
+                    input.value = ""; // Clear the invalid file
+                } else if (file.size > maxSizeInBytes) {
+                    errorSpan.innerText = "File size must be 5MB or less.";
+                    input.value = ""; // Clear the file
+                }
+            }
+        }
+    </script>
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+}
+

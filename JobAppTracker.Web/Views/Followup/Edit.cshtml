@@ -1,0 +1,106 @@
+﻿@model FollowUp
+@{
+    ViewData["Title"] = "Edit Follow-up";
+}
+
+<div class="w-100 card border-0 p-4">
+    <div class="card-header bg-success bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="text-white py-2">Edit Follow-up</h2>
+            </div>
+        </div>
+    </div>
+    <div class="card-body border p-4">
+        <form method="post" class="row" enctype="multipart/form-data">
+            @* <input hidden id="UpdatedBy" name="UpdatedBy" value="@userId" /> *@
+            <div class="p-3">
+                @* <div asp-validation-summary="All"></div>  *@
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="Id" disabled class="form-control border shadow" />
+                    <label asp-for="Id" class="ms-2"></label>
+                    <span asp-validation-for="Id" class="text-danger"></span>
+                </div>
+                <label for="Status">Job Application</label>
+                <select asp-for="JobApplicationId" asp-items="ViewBag.JobApplicationList" class="form-control">
+                    <option value="">-- Select Job Application Status --</option>
+                </select>
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="FollowUpDate" type="date" class="form-control border shadow" />
+                    <label asp-for="FollowUpDate" class="ms-2"></label>
+                    <span asp-validation-for="FollowUpDate" class="text-danger"></span>
+                </div>
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="FollowUpMethod" class="form-control border shadow" />
+                    <label asp-for="FollowUpMethod" class="ms-2"></label>
+                    <span asp-validation-for="FollowUpMethod" class="text-danger"></span>
+                </div>
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="FollowUpOutcome" class="form-control border shadow" />
+                    <label asp-for="FollowUpOutcome" class="ms-2"></label>
+                    <span asp-validation-for="FollowUpOutcome" class="text-danger"></span>
+                </div>
+                <label for="Status">Follow-up Status</label>
+                <select asp-for="Status" asp-items="ViewBag.FollowUpStatusList" class="form-control">
+                    <option value="">-- Select Follow-up Status --</option>
+                </select>
+               
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="Notes" class="form-control border shadow" />
+                    <label asp-for="Notes" class="ms-2"></label>
+                    <span asp-validation-for="Notes" class="text-danger"></span>
+                </div>
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="FollowUpReminder" class="form-control border shadow" accept=".pdf" onchange="validateFile(this)" />
+                    <label asp-for="FollowUpReminder" class="ms-2"></label>
+                    <span asp-validation-for="FollowUpReminder" id="fileError" class="text-danger"></span>
+                </div>
+
+                <div class="row pt-2">
+                    <div class="col-6 col-md-3">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-check-circle"></i> Update
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="FollowUp" asp-action="Index" class="btn btn-secondary w-100">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<h2>Edit Follow-up</h2>
+<form asp-action="Edit">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="JobApplicationId" />
+
+    <div class="form-group">
+        <label asp-for="FollowUpDate"></label>
+        <input asp-for="FollowUpDate" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="FollowUpMethod"></label>
+        <input asp-for="FollowUpMethod" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="FollowUpOutcome"></label>
+        <input asp-for="FollowUpOutcome" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Status"></label>
+        <input asp-for="Status" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Notes"></label>
+        <textarea asp-for="Notes" class="form-control"></textarea>
+    </div>
+    <div class="form-group">
+        <label asp-for="FollowUpReminder"></label>
+        <input asp-for="FollowUpReminder" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-success">Update</button>
+</form>
