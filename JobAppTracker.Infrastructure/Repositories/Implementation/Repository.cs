@@ -60,14 +60,18 @@ namespace JobAppTracker.InfraStructure.Repositories.Implementation
         public IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null, bool tracked = false)
         {
             IQueryable<T> query;
-            if (tracked)
-            {
-                query = dbSet;
-            }
-            else
-            {
-                query = dbSet.AsNoTracking();
-            }
+
+            
+                if (tracked)
+                {
+                    query = dbSet;
+                }
+                else
+                {
+                    query = dbSet.AsNoTracking();
+                }
+            
+            
             if (filter != null)
             {
                 query = query.Where(filter);
@@ -77,7 +81,7 @@ namespace JobAppTracker.InfraStructure.Repositories.Implementation
                 foreach (var includeProp in includeProperties
                     .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    query = query.Include(includeProp.Trim());
+                      query = query.Include(includeProp.Trim());
                 }
             }
             return query.ToList();

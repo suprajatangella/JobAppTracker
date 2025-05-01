@@ -1,0 +1,42 @@
+﻿@model List<FollowUp>
+
+@{
+    ViewData["Title"] = "Follow-up Reminders";
+}
+
+<h2>Follow-up Reminders</h2>
+
+@if (!Model.Any())
+{
+    <p>No follow-ups due today.</p>
+}
+else
+{
+    <form asp-action="SendReminderEmails" method="post">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Company Name</th>
+                    <th>Contact Email</th>
+                    <th>Reminder Date</th>
+                    <th>Is Remainder Sent</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var followUp in Model)
+                {
+                    <tr>
+                        <td>@followUp.JobApplication?.CompanyName</td>
+                        <td>@followUp.CompanyEmail</td>
+                        <td>@followUp.FollowUpDate.ToShortDateString()</td>
+                        <td>@followUp.IsReminderSent</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-primary">
+            Send All Reminders
+        </button>
+    </form>
+}

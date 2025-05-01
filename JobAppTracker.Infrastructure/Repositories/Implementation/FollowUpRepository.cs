@@ -21,5 +21,9 @@ namespace JobAppTracker.InfraStructure.Repositories.Implementation
         {
             _db.FollowUps.Update(followUp);
         }
+        public void UpdateRange(List<FollowUp> followUps)
+        {
+            _db.FollowUps.UpdateRange(followUps);
+        }
     }
 }

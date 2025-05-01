@@ -12,6 +12,8 @@
             <th>Outcome</th>
             <th>Status</th>
             <th>Notes</th>
+            <th>Company Email</th>
+            <th>Is Remainder Sent?</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -24,6 +26,8 @@
                 <td>@item.FollowUpOutcome</td>
                 <td>@item.Status</td>
                 <td>@item.Notes</td>
+                <td>@item.CompanyEmail</td>
+                <td>@item.IsReminderSent</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                     <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>

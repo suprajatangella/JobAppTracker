@@ -42,14 +42,14 @@ namespace JobAppTracker.Application.Services.Implementation
             if (userRole == "Admin")
             {
                 // Admins can view all FollowUps
-                return _unitOfWork.FollowUp.GetAll(includeProperties: "User")
+                return _unitOfWork.FollowUp.GetAll(includeProperties: "User", tracked: false)
                 .OrderByDescending(n => n.CreatedDate)
                 .ToList();
             }
             else
             {
                 // Regular users can only view their own FollowUps
-                return _unitOfWork.FollowUp.GetAll(includeProperties: "User")
+                return _unitOfWork.FollowUp.GetAll(includeProperties: "User", tracked: false)
                 .Where(n => n.UserId == userId)
                 .OrderByDescending(n => n.CreatedDate)
                 .ToList();
@@ -57,15 +57,21 @@ namespace JobAppTracker.Application.Services.Implementation
             }
         }
 
-       
+
         public FollowUp GetFollowUpById(int id)
         {
-            return _unitOfWork.FollowUp.Get(n=> n.Id == id);
+            return _unitOfWork.FollowUp.Get(n => n.Id == id);
         }
 
         public void UpdateFollowUp(FollowUp followUp)
         {
             _unitOfWork.FollowUp.Update(followUp);
+            _unitOfWork.Save();
+        }
+
+        public void BulkUpdateFollowUp(List<FollowUp> followUps)
+        {
+            _unitOfWork.FollowUp.UpdateRange(followUps);
             _unitOfWork.Save();
         }
     }

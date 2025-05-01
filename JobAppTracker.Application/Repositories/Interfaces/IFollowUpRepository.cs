@@ -10,5 +10,6 @@ namespace JobAppTracker.Application.Repositories.Interfaces
     public interface IFollowUpRepository : IRepository<FollowUp>
     {
         void Update(FollowUp entity);
+        void UpdateRange(List<FollowUp> followUps);
     }
 }

@@ -16,12 +16,14 @@ namespace JobAppTracker.Web.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IJobApplicationService _applicationService;
         private readonly UserManager<User> _userManager;
-        public FollowupController(IFollowUpService followUpService, IUnitOfWork unitOfWork, IJobApplicationService applicationService, UserManager<User> userManager)
+        private readonly IEmailService _emailService;
+        public FollowupController(IFollowUpService followUpService, IUnitOfWork unitOfWork, IJobApplicationService applicationService, UserManager<User> userManager, IEmailService emailService)
         {
             _followUpService = followUpService;
             _unitOfWork = unitOfWork;
             _applicationService = applicationService;
             _userManager = userManager;
+            _emailService = emailService;
         }
 
         // GET: /Followup/Create?jobApplicationId=1
@@ -30,6 +32,7 @@ namespace JobAppTracker.Web.Controllers
             var user = await _userManager.GetUserAsync(User);
             var role = await _userManager.GetRolesAsync(user);
             ViewBag.JobApplicationId = jobApplicationId;
+           
             ViewBag.FollowUpStatusList = GetFollowUpStatusSelectList();
             ViewBag.JobApplicationList = GetJobApplicationSelectList(user.Id, role.FirstOrDefault());
             return View();
@@ -42,22 +45,27 @@ namespace JobAppTracker.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+                var user = await _userManager.GetUserAsync(User);
+                followup.UserId = user.Id;
+                followup.CreatedBy = user.Id;
                 _followUpService.CreateFollowUp(followup);
                 _unitOfWork.Save();
-                return RedirectToAction("Index", "JobApplication", new { id = followup.JobApplicationId });
+                return RedirectToAction("Index", "FollowUp", new { id = followup.JobApplicationId });
             }
             return View(followup);
         }
 
         // GET: /Followup/Index?jobApplicationId=1
-        public IActionResult Index(int jobApplicationId, string userId, string userRole)
+        public async Task<IActionResult> Index(string userId, string userRole)
         {
-            var followups =  _followUpService.GetAllFollowUps(userId,userRole)
-                .Where(f => f.JobApplicationId == jobApplicationId)
+            var user = await _userManager.GetUserAsync(User);
+            var role = await _userManager.GetRolesAsync(user);
+            var followups =  _followUpService.GetAllFollowUps(user.Id, role.FirstOrDefault())
+                //.Where(f => f.JobApplicationId == jobApplicationId)
                 .OrderBy(f => f.FollowUpDate)
                 .ToList();
 
-            ViewBag.JobApplicationId = jobApplicationId;
+            //ViewBag.JobApplicationId = jobApplicationId;
             return View(followups);
         }
 
@@ -138,6 +146,59 @@ namespace JobAppTracker.Web.Controllers
                                Value = app.Id.ToString(),
                                Text = app.CompanyName
                            });
+        }
+
+        [HttpGet("reminder-followups")]
+        public async Task<IActionResult> RemainderList()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var role = await _userManager.GetRolesAsync(user);
+            var followups = _followUpService.GetAllFollowUps(user.Id, role.FirstOrDefault())
+                .Where(f => f.FollowUpDate <= DateTime.Now && f.IsReminderSent == false)
+                .ToList();
+
+            return View(followups);
+        }
+
+        // Button click: Send reminder emails and bulk update status
+        [HttpPost("send-reminder-emails")]
+        public async Task<IActionResult> SendReminderEmails()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var role = await _userManager.GetRolesAsync(user);
+            var followups = _followUpService.GetAllFollowUps(user.Id, role.FirstOrDefault())
+                .Where(f => f.FollowUpDate <= DateTime.Now && f.IsReminderSent == false)
+                .ToList();
+
+            if (followups.Count == 0)
+            {
+                return BadRequest("No follow-ups pending reminders.");
+            }
+
+            var emailsSent = new List<string>();
+
+            foreach (var followUp in followups)
+            {
+                // Send email asynchronously
+                var result = await _emailService.SendEmailAsync(followUp.CompanyEmail, "Application staus Follow-up","I want to followup my application status");
+                if (result.Success)
+                {
+                    emailsSent.Add(followUp.CompanyEmail);
+                    followUp.IsReminderSent = true; // Mark as sent
+                    followUp.User = null;
+                }
+                else
+                {
+                    // Log the error or handle it as needed
+                    Console.WriteLine($"Failed to send email to {followUp.CompanyEmail}: {result.Message}");
+                    return BadRequest($"Failed to send email to {followUp.CompanyEmail}: {result.Message}");
+                }
+            }
+
+            // Bulk update IsReminderSent status
+            _followUpService.BulkUpdateFollowUp(followups);
+
+            return View(nameof(RemainderList));
         }
     }
 

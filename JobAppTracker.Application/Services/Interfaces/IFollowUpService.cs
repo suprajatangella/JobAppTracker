@@ -14,5 +14,6 @@ namespace JobAppTracker.Application.Services.Interfaces
         void CreateFollowUp(FollowUp followUp);
         void UpdateFollowUp(FollowUp followUp);
         bool DeleteFollowUp(int id);
+        void BulkUpdateFollowUp(List<FollowUp> followUps);
     }
 }

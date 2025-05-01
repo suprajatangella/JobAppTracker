@@ -55,7 +55,16 @@
                     <label asp-for="FollowUpReminder" class="ms-2"></label>
                     <span asp-validation-for="FollowUpReminder" id="fileError" class="text-danger"></span>
                 </div>
-
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="CompanyEmail" class="form-control border shadow" />
+                    <label asp-for="CompanyEmail" class="ms-2"></label>
+                    <span asp-validation-for="CompanyEmail" class="text-danger"></span>
+                </div>
+                <div class="form-floating py-1 col-12">
+                    <input asp-for="IsReminderSent" type="checkbox" class="form-control border shadow" />
+                    <label asp-for="IsReminderSent" class="ms-2"></label>
+                    <span asp-validation-for="IsReminderSent" class="text-danger"></span>
+                </div>
                 <div class="row pt-2">
                     <div class="col-6 col-md-3">
                         <button type="submit" class="btn btn-success w-100">
