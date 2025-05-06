@@ -14,5 +14,6 @@ namespace JobAppTracker.Application.Services.Interfaces
         void CreateInterviewSchedule(InterviewSchedule interviewSchedule);
         void UpdateInterviewSchedule(InterviewSchedule interviewSchedule);
         bool DeleteInterviewSchedule(int id);
+        bool IsInterviewOverlapping(string userId, DateTime interviewDate);
     }
 }

@@ -30,11 +30,19 @@ namespace JobAppTracker.Application.Services.Implementation
 
             if (interviewSchedule != null)
             {
-                _unitOfWork.InterviewSchedule.Remove(interviewSchedule);
+                interviewSchedule.Status = "Cancelled";
+                interviewSchedule.UpdatedDate = DateTime.UtcNow;
+                _unitOfWork.InterviewSchedule.Update(interviewSchedule);
                 _unitOfWork.Save();
                 return true;
             }
             return false;
+        }
+
+        public bool IsInterviewOverlapping(string userId, DateTime interviewDate)
+        {
+            var isOverlapping = _unitOfWork.InterviewSchedule.GetAll().Any(i => i.UserId == userId && i.InterviewDate == interviewDate);
+            return isOverlapping;
         }
 
         public IEnumerable<InterviewSchedule> GetAllInterviewSchedules(string userId, string userRole)

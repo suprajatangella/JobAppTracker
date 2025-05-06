@@ -9,6 +9,8 @@ namespace JobAppTracker.Domain.Entities
     public class InterviewSchedule
     {
         public int Id { get; set; }
+
+        public string TimeZoneId { get; set; }
         public DateTime InterviewDate { get; set; }
         public string InterviewerName { get; set; }
         public string InterviewMode { get; set; } // e.g., Online, Phone, In-Person
