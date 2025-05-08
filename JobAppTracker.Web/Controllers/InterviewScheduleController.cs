@@ -3,9 +3,11 @@ using JobAppTracker.Application.Services.Interfaces;
 using JobAppTracker.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
+using System.Data;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace JobAppTracker.Web.Controllers
@@ -15,18 +17,20 @@ namespace JobAppTracker.Web.Controllers
         private readonly IInterviewScheduleService _interviewScheduleServie;
         private readonly UserManager<User> _userManager;
         private readonly IEmailService _emailService;
-        public InterviewScheduleController(IInterviewScheduleService interviewScheduleServie, UserManager<User> userManager, IEmailService emailService)
+        private readonly IJobApplicationService _applicationService;
+        public InterviewScheduleController(IInterviewScheduleService interviewScheduleServie, UserManager<User> userManager, IEmailService emailService, IJobApplicationService applicationService)
         {
             _interviewScheduleServie = interviewScheduleServie;
             _userManager = userManager;
             _emailService = emailService;
+            _applicationService = applicationService;
         }
 
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
             var role = await _userManager.GetRolesAsync(user);
-            var interviews =  _interviewScheduleServie.GetAllInterviewSchedules(user.Id, role.FirstOrDefault())
+            var interviews = _interviewScheduleServie.GetAllInterviewSchedules(user.Id, role.FirstOrDefault())
             .Where(i => i.UserId == user.Id)
              .ToList();
             return View(interviews);
@@ -34,31 +38,37 @@ namespace JobAppTracker.Web.Controllers
 
         public async Task<IActionResult> CreateInterview()
         {
-            ViewBag.TimeZones = TimeZoneInfo.GetSystemTimeZones();
+            var user = await _userManager.GetUserAsync(User);
+            var role = await _userManager.GetRolesAsync(user);
+            PopulateTimeZones();
+            ViewBag.JobApplicationList = GetJobApplicationSelectList(user.Id, role.FirstOrDefault());
             return View();
         }
 
-            [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> CreateInterview(InterviewSchedule model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             var user = await _userManager.GetUserAsync(User);
+            var role = await _userManager.GetRolesAsync(user);
             if (!_interviewScheduleServie.IsInterviewOverlapping(user.Id, model.InterviewDate))
             {
+                model.UserId = user.Id;
                 model.CreatedDate = DateTime.UtcNow;
                 model.CreatedBy = User.Identity.Name;
                 var tz = TimeZoneInfo.FindSystemTimeZoneById(model.TimeZoneId);
                 model.InterviewDate = TimeZoneInfo.ConvertTimeToUtc(model.InterviewDate, tz);
                 _interviewScheduleServie.CreateInterviewSchedule(model);
                 TempData["success"] = "Interview scheduled successfully";
-                _emailService.SendEmailAsync("supraja.tangella@gmail.com", "Interview Scheduled", "The interview scheduled on "+ TimeZoneInfo.ConvertTimeFromUtc(model.InterviewDate, tz));
+                _emailService.SendEmailAsync("supraja.tangella@gmail.com", "Interview Scheduled", "The interview scheduled on " + TimeZoneInfo.ConvertTimeFromUtc(model.InterviewDate, tz));
                 return RedirectToAction(nameof(Index));
             }
             else
             {
                 TempData["error"] = "This interview is overlapping with existing interview";
-                ViewBag.TimeZones = TimeZoneInfo.GetSystemTimeZones();
+                PopulateTimeZones();
+                ViewBag.JobApplicationList = GetJobApplicationSelectList(user.Id, role.FirstOrDefault());
                 return View(model);
             }
         }
@@ -67,18 +77,22 @@ namespace JobAppTracker.Web.Controllers
         {
             var existing = _interviewScheduleServie.GetInterviewScheduleById(id);
             if (existing == null) return NotFound();
-            ViewBag.TimeZones = TimeZoneInfo.GetSystemTimeZones();
+            var user = await _userManager.GetUserAsync(User);
+            var role = await _userManager.GetRolesAsync(user);
+            ViewBag.JobApplicationList = GetJobApplicationSelectList(user.Id, role.FirstOrDefault());
+            PopulateTimeZones();
             var tz = TimeZoneInfo.FindSystemTimeZoneById(existing.TimeZoneId);
             existing.InterviewDate = TimeZoneInfo.ConvertTimeFromUtc(existing.InterviewDate, tz);
             return View(existing);
         }
 
-            [HttpPost]
-        public async Task<IActionResult> UpdateInterview(int id,InterviewSchedule updated)
+        [HttpPost]
+        public async Task<IActionResult> UpdateInterview(int id, InterviewSchedule updated)
         {
             var existing = _interviewScheduleServie.GetInterviewScheduleById(id);
             if (existing == null) return NotFound();
             var user = await _userManager.GetUserAsync(User);
+            var role = await _userManager.GetRolesAsync(user);
             if (!_interviewScheduleServie.IsInterviewOverlapping(user.Id, updated.InterviewDate))
             {
                 var tz = TimeZoneInfo.FindSystemTimeZoneById(existing.TimeZoneId);
@@ -89,7 +103,7 @@ namespace JobAppTracker.Web.Controllers
                 existing.Status = updated.Status;
                 existing.UpdatedDate = DateTime.UtcNow;
                 existing.UpdatedBy = User.Identity.Name;
-
+                existing.UserId = user.Id;
                 _interviewScheduleServie.UpdateInterviewSchedule(existing);
                 TempData["success"] = "Interview updated successfully";
                 _emailService.SendEmailAsync("supraja.tangella@gmail.com", "Interview Scheduled", "The interview scheduled on " + TimeZoneInfo.ConvertTimeFromUtc(existing.InterviewDate, tz));
@@ -98,7 +112,8 @@ namespace JobAppTracker.Web.Controllers
             else
             {
                 TempData["error"] = "This interview is overlapping with existing interview";
-                ViewBag.TimeZones = TimeZoneInfo.GetSystemTimeZones();
+                PopulateTimeZones();
+                ViewBag.JobApplicationList = GetJobApplicationSelectList(user.Id, role.FirstOrDefault());
                 return View(updated);
             }
 
@@ -124,6 +139,27 @@ namespace JobAppTracker.Web.Controllers
             _emailService.SendEmailAsync("supraja.tangella@gmail.com", "Interview Cancelled", "The scheduled interview is Cancelled");
             return RedirectToAction(nameof(Index));
 
+        }
+
+        private IEnumerable<SelectListItem> GetJobApplicationSelectList(string userId, string role)
+        {
+
+            return _applicationService.GetAllJobApplications(userId, role)
+                           .Select(app => new SelectListItem
+                           {
+                               Value = app.Id.ToString(),
+                               Text = app.CompanyName
+                           });
+        }
+        private void PopulateTimeZones()
+        {
+            var timeZones = TimeZoneInfo.GetSystemTimeZones()
+                .Select(tz => new SelectListItem
+                {
+                    Value = tz.Id,
+                    Text = tz.StandardName
+                }).ToList();
+            ViewBag.TimeZones = timeZones.OrderBy(tz => tz.Text); 
         }
     }
 }

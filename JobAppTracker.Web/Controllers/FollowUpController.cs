@@ -13,14 +13,14 @@ namespace JobAppTracker.Web.Controllers
     public class FollowupController : Controller
     {
         private readonly IFollowUpService _followUpService;
-        private readonly IUnitOfWork _unitOfWork;
+        //private readonly IUnitOfWork _unitOfWork;
         private readonly IJobApplicationService _applicationService;
         private readonly UserManager<User> _userManager;
         private readonly IEmailService _emailService;
-        public FollowupController(IFollowUpService followUpService, IUnitOfWork unitOfWork, IJobApplicationService applicationService, UserManager<User> userManager, IEmailService emailService)
+        public FollowupController(IFollowUpService followUpService,  IJobApplicationService applicationService, UserManager<User> userManager, IEmailService emailService)
         {
             _followUpService = followUpService;
-            _unitOfWork = unitOfWork;
+            //_unitOfWork = unitOfWork;
             _applicationService = applicationService;
             _userManager = userManager;
             _emailService = emailService;
@@ -49,7 +49,7 @@ namespace JobAppTracker.Web.Controllers
                 followup.UserId = user.Id;
                 followup.CreatedBy = user.Id;
                 _followUpService.CreateFollowUp(followup);
-                _unitOfWork.Save();
+                //_unitOfWork.Save();
                 return RedirectToAction("Index", "FollowUp", new { id = followup.JobApplicationId });
             }
             return View(followup);
@@ -97,7 +97,7 @@ namespace JobAppTracker.Web.Controllers
             if (ModelState.IsValid)
             {
                 _followUpService.UpdateFollowUp(followup);
-                _unitOfWork.Save();
+                //_unitOfWork.Save();
                 return RedirectToAction("Index", new { jobApplicationId = followup.JobApplicationId });
             }
             return View(followup);
@@ -122,7 +122,7 @@ namespace JobAppTracker.Web.Controllers
         {
             var followup = _followUpService.GetFollowUpById(id);
             _followUpService.DeleteFollowUp(followup.Id);
-            _unitOfWork.Save();
+            //_unitOfWork.Save();
             return RedirectToAction("Index", new { jobApplicationId = followup.JobApplicationId });
         }
 

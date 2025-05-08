@@ -50,14 +50,14 @@ namespace JobAppTracker.Application.Services.Implementation
             if (userRole == "Admin")
             {
                 // Admins can view all Interview Schedules
-                return _unitOfWork.InterviewSchedule.GetAll(includeProperties: "User")
+                return _unitOfWork.InterviewSchedule.GetAll(includeProperties: "User, JobApplication")
                 .OrderByDescending(n => n.CreatedDate)
                 .ToList();
             }
             else
             {
                 // Regular users can only view their own interview schedules
-                return _unitOfWork.InterviewSchedule.GetAll(includeProperties: "User")
+                return _unitOfWork.InterviewSchedule.GetAll(includeProperties: "User, JobApplication")
                 .Where(n => n.UserId == userId)
                 .OrderByDescending(n => n.CreatedDate)
                 .ToList();

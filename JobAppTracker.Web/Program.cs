@@ -19,6 +19,7 @@ builder.Services.AddDefaultIdentity<User>().AddRoles<IdentityRole>()
 builder.Services.AddScoped<IJobApplicationService, JobApplicationService>();
 builder.Services.AddScoped<IFollowUpService, FollowUpService>();
 builder.Services.AddScoped<IResumeFileService, ResumeFileService>();
+builder.Services.AddScoped<IInterviewScheduleService, InterviewScheduleService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
