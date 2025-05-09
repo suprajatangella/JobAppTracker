@@ -41,6 +41,8 @@ namespace JobAppTracker.Web.Controllers
             var user = await _userManager.GetUserAsync(User);
             var role = await _userManager.GetRolesAsync(user);
             PopulateTimeZones();
+            PopulateInterviewModes();
+            PopulateInterviewStatus();
             ViewBag.JobApplicationList = GetJobApplicationSelectList(user.Id, role.FirstOrDefault());
             return View();
         }
@@ -68,6 +70,8 @@ namespace JobAppTracker.Web.Controllers
             {
                 TempData["error"] = "This interview is overlapping with existing interview";
                 PopulateTimeZones();
+                PopulateInterviewModes();
+                PopulateInterviewStatus();
                 ViewBag.JobApplicationList = GetJobApplicationSelectList(user.Id, role.FirstOrDefault());
                 return View(model);
             }
@@ -81,6 +85,8 @@ namespace JobAppTracker.Web.Controllers
             var role = await _userManager.GetRolesAsync(user);
             ViewBag.JobApplicationList = GetJobApplicationSelectList(user.Id, role.FirstOrDefault());
             PopulateTimeZones();
+            PopulateInterviewModes();
+            PopulateInterviewStatus();
             var tz = TimeZoneInfo.FindSystemTimeZoneById(existing.TimeZoneId);
             existing.InterviewDate = TimeZoneInfo.ConvertTimeFromUtc(existing.InterviewDate, tz);
             return View(existing);
@@ -113,6 +119,8 @@ namespace JobAppTracker.Web.Controllers
             {
                 TempData["error"] = "This interview is overlapping with existing interview";
                 PopulateTimeZones();
+                PopulateInterviewModes();
+                PopulateInterviewStatus();
                 ViewBag.JobApplicationList = GetJobApplicationSelectList(user.Id, role.FirstOrDefault());
                 return View(updated);
             }
@@ -160,6 +168,27 @@ namespace JobAppTracker.Web.Controllers
                     Text = tz.StandardName
                 }).ToList();
             ViewBag.TimeZones = timeZones.OrderBy(tz => tz.Text); 
+        }
+
+        private void PopulateInterviewModes()
+        {
+            ViewBag.Modes = new List<SelectListItem>
+            {
+                new SelectListItem {Text = "In Person", Value = "InPerson"},
+                new SelectListItem {Text = "Online", Value = "Online"},
+                new SelectListItem {Text = "Phone", Value = "Phone"}
+            };
+        }
+        private void PopulateInterviewStatus()
+        {
+            ViewBag.Statuses = new List<SelectListItem>
+            {
+                new SelectListItem {Text = "Scheduled", Value = "Scheduled"},
+                new SelectListItem {Text = "Completed", Value = "Completed"},
+                new SelectListItem {Text = "Cancelled", Value = "Cancelled"},
+                new SelectListItem {Text = "Rescheduled", Value = "Rescheduled"}
+            };
+
         }
     }
 }

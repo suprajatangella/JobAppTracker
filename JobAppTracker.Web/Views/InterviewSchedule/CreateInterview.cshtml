@@ -31,11 +31,10 @@
                     <label asp-for="InterviewerName" class="ms-2"></label>
                     <span asp-validation-for="InterviewerName" class="text-danger"></span>
                 </div>
-                <div class="form-floating py-1 col-12">
-                    <input asp-for="InterviewMode" class="form-control border shadow" />
-                    <label asp-for="InterviewMode" class="ms-2"></label>
-                    <span asp-validation-for="InterviewMode" class="text-danger"></span>
-                </div>
+               <label for="InterviewMode">Interview Mode</label>
+                <select asp-for="InterviewMode" asp-items="ViewBag.Modes" class="form-control">
+                    <option value="">-- Select Interview Mode --</option>
+                </select>
 
                 <label for="TimeZoneId">Time Zone</label>
                 <select asp-for="TimeZoneId" asp-items="ViewBag.TimeZones" class="form-control">
@@ -46,11 +45,10 @@
                     <label asp-for="Notes" class="ms-2"></label>
                     <span asp-validation-for="Notes" class="text-danger"></span>
                 </div>
-                <div class="form-floating py-1 col-12">
-                    <input asp-for="Status" class="form-control border shadow" />
-                    <label asp-for="Status" class="ms-2"></label>
-                    <span asp-validation-for="Status" id="fileError" class="text-danger"></span>
-                </div>
+                <label for="Status">Status</label>
+                <select asp-for="Status" asp-items="ViewBag.Statuses" class="form-control">
+                    <option value="">-- Select Status --</option>
+                </select>
                
                 <div class="row pt-2">
                     <div class="col-6 col-md-3">
